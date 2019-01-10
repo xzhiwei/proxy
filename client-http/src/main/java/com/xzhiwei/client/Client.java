@@ -1,4 +1,4 @@
-package com.xzhiwei;
+package com.xzhiwei.client;
 
 import com.xzhiwei.common.Jiami;
 import org.slf4j.Logger;
