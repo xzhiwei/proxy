@@ -34,6 +34,8 @@
             <version>1.4</version>
             <configuration>
                 <createDependencyReducedPom>true</createDependencyReducedPom>
+                <finalName>client</finalName>
+                <outputDirectory>${project.parent.build.directory}</outputDirectory>
             </configuration>
             <executions>
                 <execution>
