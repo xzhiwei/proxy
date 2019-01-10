@@ -1,3 +1,6 @@
+package com.xzhiwei.server;
+
+import com.xzhiwei.common.Jiami;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -5,15 +8,14 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class Client {
+public class Server {
 
-    private static final Logger logger = LoggerFactory.getLogger(Client.class);
+    private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(8082);
+        ServerSocket serverSocket = new ServerSocket(80);
         for (; ; ) {
-            Socket socket = serverSocket.accept();
-            new SocketHandle(socket).start();
+            new SocketHandle(serverSocket.accept()).start();
         }
     }
 
@@ -39,21 +41,27 @@ public class Client {
                 String host = "";
                 BufferedReader lineBuffer = new BufferedReader(new InputStreamReader(clientInput));
                 StringBuilder headStr = new StringBuilder();
-                //读取HTTP请求头，并拿到HOST请求头和method
                 while (null != (line = lineBuffer.readLine())) {
-                    headStr.append(line + "\r\n");
+                    if(line.contains("request_baidu")){
+                        headStr = new StringBuilder();
+                        continue;
+                    }
                     if (line.length() == 0) {
                         break;
-                    } else {
-                        String[] temp = line.split(" ");
-                        if (temp[0].contains("Host")) {
-                            host = temp[1];
-                        }
+                    }
+                    headStr.append(line + "\r\n");
+                }
+                String realData = Jiami.jiemi(headStr.toString());
+                for(String i:realData.split("\r\n")){
+                    String[] temp = i.split(" ");
+                    if (temp[0].contains("Host")) {
+                        host = temp[1];
                     }
                 }
-                System.out.println(headStr.toString() + "\r\n\r\n");
-                String type = headStr.substring(0, headStr.indexOf(" "));
+
+                String type = realData.substring(0, realData.indexOf(" "));
                 //根据host头解析出目标服务器的host和port
+                System.out.println(realData.split("\r\n")[0]);
                 String[] hostTemp = host.split(":");
                 host = hostTemp[0];
                 int port = 80;
@@ -61,24 +69,23 @@ public class Client {
                     port = Integer.valueOf(hostTemp[1]);
                 }
                 //连接到目标服务器
-                proxySocket = new Socket("localhost", 5601);
+                proxySocket = new Socket(host, port);
                 proxyInput = proxySocket.getInputStream();
                 proxyOutput = proxySocket.getOutputStream();
                 //根据HTTP method来判断是https还是http请求
-                proxyOutput.write(Jiami.jiami(headStr.toString()).getBytes());
-                proxyOutput.write("\r\n".getBytes());
+                if ("CONNECT".equalsIgnoreCase(type)) {//https先建立隧道
+                    clientOutput.write("HTTP/1.1 200 Connection Established\r\n\r\n".getBytes());
+                    clientOutput.flush();
+                } else {//http直接将请求头转发
+                    proxyOutput.write(realData.getBytes());
+                }
                 //新开线程转发客户端请求至目标服务器
                 new ProxyHandleThread(clientInput, proxyOutput).start();
                 //转发目标服务器响应至客户端
                 while (true) {
-                    int data = proxyInput.read();
-                    clientOutput.write(data);
-                    if(data == -1){
-                        break;
-                    }
+                    clientOutput.write(proxyInput.read());
                 }
             } catch (IOException e) {
-                e.printStackTrace();
             } finally {
                 if (proxyInput != null) {
                     try {
@@ -141,15 +148,9 @@ public class Client {
         public void run() {
             try {
                 while (true) {
-                    int data = input.read();
-                    output.write(data);
-                    if(data == -1){
-                        break;
-                    }
-
+                    output.write(input.read());
                 }
             } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
