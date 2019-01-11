@@ -41,7 +41,7 @@ public class Jiami {
             if (md5.equals(DigestUtils.md5Hex(d + solt))) {
                 return d;
             } else {
-                return null;
+                return "";
             }
         } else {
             return data;
