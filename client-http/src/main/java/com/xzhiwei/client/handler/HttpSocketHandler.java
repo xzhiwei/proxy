@@ -1,5 +1,6 @@
 package com.xzhiwei.client.handler;
 
+import com.xzhiwei.client.Config;
 import com.xzhiwei.common.AbstractSocketHandle;
 import com.xzhiwei.common.Jiami;
 
@@ -22,8 +23,8 @@ public class HttpSocketHandler extends AbstractSocketHandle {
 
     public HttpSocketHandler(Socket socket) {
         super(socket);
-        this.setRemoteHost("a.xzhiwei.top");
-        this.setRemotePort(80);
+        this.setRemoteHost(Config.REMOTE_SERVER_HOST);
+        this.setRemotePort(Config.REMOTE_SERVER_PORT);
     }
 
     @Override
@@ -44,7 +45,7 @@ public class HttpSocketHandler extends AbstractSocketHandle {
     @Override
     public void sendHeaderToRemote(String header, OutputStream outputStream) throws IOException {
         outputStream.write(shadowData.getBytes());
-        outputStream.write("request_baidu\r\n".getBytes());
+        outputStream.write((Config.HTTP_SOCKET_FLAG + "\r\n").getBytes());
         outputStream.write(Jiami.jiami(header.toString()).getBytes());
         outputStream.write("\r\n".getBytes());
     }

@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.SocketException;
 
 public abstract class AbstractSocketHandle extends Thread  {
 
@@ -121,15 +120,15 @@ public abstract class AbstractSocketHandle extends Thread  {
 
         @Override
         public void run() {
+            int data = 0;
             try {
-                while (true) {
-                    int data = input.read();
+                do {
+                    data = input.read();
                     output.write(data);
                     if(data == -1){
                         break;
                     }
-
-                }
+                } while (true);
             } catch (IOException e) {
                 logger.warn(e.getMessage());
             }

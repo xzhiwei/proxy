@@ -1,4 +1,4 @@
-package com.xzhiwei.client;
+package com.xzhiwei.server;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +10,7 @@ public class Config {
 
     static {
         // 使用ClassLoader加载properties配置文件生成对应的输入流
-        InputStream in = Config.class.getClassLoader().getResourceAsStream("client.properties");
+        InputStream in = Config.class.getClassLoader().getResourceAsStream("server.properties");
         // 使用properties对象加载输入流
         try {
             properties.load(in);
@@ -19,5 +19,7 @@ public class Config {
         }
     }
     
-    public static int port = Integer.parseInt(properties.getProperty("client.port"));
+    public static int port = Integer.parseInt(properties.getProperty("server.port"));
+
+    public static String HTTP_SOCKET_FLAG = properties.getProperty("http.socket.flag");
 }

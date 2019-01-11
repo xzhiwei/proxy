@@ -14,7 +14,7 @@ public class Server {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(80);
+        ServerSocket serverSocket = new ServerSocket(Config.port);
         for (; ; ) {
             Socket socket = serverSocket.accept();
             ExecutorManager.executor.submit(new HttpSocketHander(socket));
